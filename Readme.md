@@ -10,7 +10,7 @@
 2. Install dependencies:
 
    ```bash
-   pip install Flask Flask-CORS
+   pip install -r requirements.txt
    ```
 
 ### Setting up Elastic Search
