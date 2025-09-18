@@ -96,6 +96,11 @@ function Discover() {
     }
   };
 
+  const handleReset = () => {
+    setCurrentQuestion(-1);
+    setAnswers([]);
+  };
+
   const renderWelcomeScreen = () => (
     <>
       <h1>Discover</h1>
@@ -110,6 +115,9 @@ function Discover() {
     
     return (
       <>
+        <button className="reset-button" onClick={handleReset} title="Reset Survey">
+          ↻
+        </button>
         <h2>Question {currentQuestion + 1} of {questions.length}</h2>
         <h3 className="question-text">{question.question}</h3>
         <div className="options-container">
