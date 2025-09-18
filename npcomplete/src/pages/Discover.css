@@ -1,0 +1,68 @@
+.discover-page {
+  min-height: 100vh;
+  background-color: #e3f2fd;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.discover-container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-10vh);
+}
+
+.discover-card {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.discover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.discover-card h1 {
+  color: #1976d2;
+  margin-bottom: 1.5rem;
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+.discover-card p {
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .discover-container {
+    padding: 1rem;
+  }
+  
+  .discover-card {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  .discover-card h1 {
+    font-size: 2rem;
+  }
+  
+  .discover-card p {
+    font-size: 1rem;
+  }
+}
