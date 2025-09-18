@@ -142,7 +142,7 @@ function Discover() {
             className="nav-button next-button" 
             onClick={handleNext}
           >
-            {currentQuestion === questions.length - 1 ? 'Finish' : 'Next →'}
+            {currentQuestion === questions.length - 1 ? 'Finish' : 'Skip →'}
           </button>
         </div>
       </>
