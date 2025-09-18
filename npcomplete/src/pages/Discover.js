@@ -116,7 +116,6 @@ function Discover() {
     return (
       <>
         <button className="reset-button" onClick={handleReset} title="Reset Survey">
-          ↻
         </button>
         <h2>Question {currentQuestion + 1} of {questions.length}</h2>
         <h3 className="question-text">{question.question}</h3>
