@@ -28,12 +28,12 @@ function Discover() {
     },
     {
       id: 3,
-      question: "What age group would you like to work with?",
+      question: "What group would you like to work with?",
       options: [
-        "Children (0-12 years)",
-        "Teenagers (13-18 years)",
-        "Adults (19-64 years)",
-        "Seniors (65+ years)"
+        "1",
+        "2",
+        "3",
+        "4"
       ]
     },
     {
