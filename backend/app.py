@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from backend.es_manager import ElasticManager
+from es_manager import ElasticManager
 
 app = Flask(__name__)
 CORS(app)  # This allows cross-origin requests
@@ -73,6 +73,11 @@ def search_organizations():
     query = request.json.get("query", {"match_all": {}})
     results = es_manager.search(query, INDEX_NAME)
     return jsonify(results)
+
+
+@app.route("/", methods=["GET"])
+def root():
+    return jsonify({"message": "Backend is running."})
 
 
 if __name__ == "__main__":
