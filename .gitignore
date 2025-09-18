@@ -430,4 +430,10 @@ sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/flask,react,python,visualstudiocode,node
 
+# Ignore all data by default
+data/**
 
+# Keep these small, committed samples/docs
+!data/eo_oh_1k.csv
+
+elastic-start-local/
