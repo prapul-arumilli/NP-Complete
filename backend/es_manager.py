@@ -41,7 +41,7 @@ class ElasticManager:
             self.es.index(index=index_name, document=doc)
         print(f"{len(documents)} documents added.")
 
-    def search(self, query: dict[str, Any], index_name: str):
+    def search(self, query: dict[str, Any], index_name: str) -> list[dict[str, Any]]:
         """Run a search query"""
         response = self.es.search(index=index_name, body=query)
         return response["hits"]["hits"]
@@ -55,6 +55,13 @@ class ElasticManager:
         """Delete the entire index"""
         self.es.indices.delete(index=index_name, ignore=[400, 404])
         print(f"Index '{index_name}' deleted (if existed).")
+
+    def get_all_documents(
+        self, index_name: str, size: int = 1000
+    ) -> list[dict[str, Any]]:
+        query = {"query": {"match_all": {}}, "size": size}
+        response = self.es.search(index=index_name, body=query)
+        return [hit["_source"] for hit in response["hits"]["hits"]]
 
 
 # Example Usage
