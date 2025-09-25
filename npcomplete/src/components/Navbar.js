@@ -30,9 +30,11 @@ function Navbar() {
             </li>
           ))}
         </ul>
-        <button className="login-button">
-          Login
-        </button>
+        <Link to="/login">
+          <button className="login-button">
+            Login
+          </button>
+        </Link>
       </div>
     </nav>
   );
