@@ -30,11 +30,18 @@ function Navbar() {
             </li>
           ))}
         </ul>
-        <Link to="/login">
-          <button className="login-button">
-            Login
-          </button>
-        </Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link to="/signup">
+            <button className="login-button" style={{ background: '#e0e0e0', color: '#282c34' }}>
+              Sign Up
+            </button>
+          </Link>
+          <Link to="/login">
+            <button className="login-button">
+              Login
+            </button>
+          </Link>
+        </div>
       </div>
     </nav>
   );
