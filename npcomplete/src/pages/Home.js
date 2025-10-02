@@ -74,9 +74,7 @@ function Home() {
             Our Mission
           </h2>
           <p style={{ fontSize: "1.1rem", lineHeight: "1.6" }}>
-            Our mission is to push the boundaries of computational thinking,
-            problem-solving, and technology innovation to create impactful
-            solutions.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
           </p>
         </div>
         <div style={{ flex: 1 }}>
@@ -109,9 +107,7 @@ function Home() {
         <div style={{ flex: 1, paddingLeft: "2rem" }}>
           <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Our Story</h2>
           <p style={{ fontSize: "1.1rem", lineHeight: "1.6" }}>
-            Our story began with a vision — to transform abstract computer
-            science problems into real-world solutions. From small beginnings,
-            we grew into a community passionate about innovation.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
           </p>
         </div>
       </section>
