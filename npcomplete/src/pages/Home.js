@@ -16,7 +16,6 @@ function Home() {
     //    We add style overrides to allow scrolling
     <div 
       className="auth-page" 
-      style={{ alignItems: 'flex-start', overflowY: 'auto' }}
     >
       {/* 2. Use .auth-container to center the content */}
       <div className="auth-container">
@@ -25,7 +24,6 @@ function Home() {
         {/* We add margin to create the space you can scroll into */}
         <div 
           className="auth-card" 
-          style={{ marginTop: '5rem', marginBottom: '5rem' }}
         >
 
           {/* All your original content is now inside .auth-card */}

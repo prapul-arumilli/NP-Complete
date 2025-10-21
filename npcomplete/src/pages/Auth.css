@@ -1,17 +1,18 @@
 /* ...existing code... */
 .auth-page {
-  position: fixed;
+  /* position: fixed; */ /* Removed to allow scrolling */
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh; /* Changed from height to min-height */
   background-color: #e3f2fd;
   padding: 0;
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to align top */
   justify-content: center;
   z-index: 1;
+  overflow-y: auto; /* Added to allow this container to scroll */
 }
 
 .auth-container {
@@ -22,6 +23,8 @@
   align-items: center;
   justify-content: center;
   z-index: 2;
+  margin-top: 5rem; /* Added space above */
+  margin-bottom: 5rem; /* Added space below */
 }
 
 .auth-card {
@@ -168,3 +171,66 @@
   .auth-card h1 { font-size: 2rem; }
   .auth-card p { font-size: 1rem; }
 }
+
+/* ========================================= */
+/* === NEW STYLES MOVED FROM EXPLORE.CSS === */
+/* ========================================= */
+
+.explore-content-container {
+  width: 90%;
+  max-width: 1200px; /* From old .content-grid */
+  /* margin: 0 auto; <-- THIS WAS THE PROBLEM. REMOVED. */
+  padding: 0 1rem; /* Removed old top/bottom padding */
+  margin-top: 5rem; /* Added space above */
+  margin-bottom: 5rem; /* Added space below */
+  z-index: 2;
+}
+
+/* New class to add search icon to form-row inputs */
+.form-row input.search-input {
+  padding-left: 40px; /* Space for icon */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'); /* Magnifying glass icon */
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-size: 20px 20px;
+}
+
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid */
+  gap: 20px; /* Space between grid items */
+  width: 100%; 
+}
+
+.explore-box {
+  /* Styled to match .auth-card aesthetic */
+  border: 1px solid #e0e0e0;
+  border-radius: 12px; /* Matches .auth-card */
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Softer shadow */
+  transition: all 0.2s ease;
+  overflow: hidden; /* For background images */
+}
+
+.explore-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); /* Matches button hover */
+}
+
+/* Specific box colors - kept for variety */
+.explore-box.pink { background-color: #f8c0e0; border-color: #d18ab3; }
+.explore-box.red { background-color: #f0c0b0; border-color: #d19a80; }
+.explore-box.large-green {
+  background-color: #b0e0c0;
+  border-color: #8acb9e;
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 250px;
+}
+.explore-box.light-green { background-color: #d0f0c0; border-color: #a0d18a; }
+.explore-box.purple { background-color: #e0c0f0; border-color: #b38ad1; }
+.explore-box.light-gray { background-color: #e0e0e0; border-color: #c0c0c0; }
+.explore-box.light-blue { background-color: #c0d0f0; border-color: #8ac0d1; }
