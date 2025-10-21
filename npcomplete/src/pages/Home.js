@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import './Auth.css'; // This file will now control all the styling
 
 function Home() {
   const [message, setMessage] = useState("");
@@ -11,126 +12,80 @@ function Home() {
   };
 
   return (
-    <div className="page-container" style={{ fontFamily: "sans-serif" }}>
-      {/* About Us Section */}
-      <section
-        style={{
-          height: "100vh",
-          position: "relative",
-          backgroundImage: "url('/about-bg.jpg')", // replace with your image
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          color: "white",
-        }}
-      >
-        {/* Overlay for readability */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)", // dark transparent overlay
-          }}
-        />
-
-        {/* Text on top */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            padding: "2rem",
-          }}
+    // 1. Use .auth-page as the full-screen wrapper
+    //    We add style overrides to allow scrolling
+    <div 
+      className="auth-page" 
+      style={{ alignItems: 'flex-start', overflowY: 'auto' }}
+    >
+      {/* 2. Use .auth-container to center the content */}
+      <div className="auth-container">
+        
+        {/* 3. Use .auth-card as the white box for ALL content */}
+        {/* We add margin to create the space you can scroll into */}
+        <div 
+          className="auth-card" 
+          style={{ marginTop: '5rem', marginBottom: '5rem' }}
         >
-          <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>
-            About Us
-          </h1>
-          <p style={{ fontSize: "1.5rem", marginTop: "1rem" }}>
-            Big facts go here — About Us section
-          </p>
-        </div>
-      </section>
 
-      {/* Our Mission Section */}
-      <section
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "4rem",
-          backgroundColor: "#f5f5f5",
-          minHeight: "100vh",
-        }}
-      >
-        <div style={{ flex: 1, paddingRight: "2rem" }}>
-          <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
-            Our Mission
-          </h2>
-          <p style={{ fontSize: "1.1rem", lineHeight: "1.6" }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-          </p>
-        </div>
-        <div style={{ flex: 1 }}>
-          <img
-            src="/mission.jpg"
-            alt="Our Mission"
-            style={{ width: "100%", borderRadius: "8px" }}
-          />
-        </div>
-      </section>
+          {/* All your original content is now inside .auth-card */}
+          
+          {/* About Us Section */}
+          {/* The h1 and p tags will be styled by .auth-card h1 and .auth-card p */}
+          <section>
+            <h1>About Us</h1>
+            <p>
+              Big facts go here — About Us section
+            </p>
+            {/* The background image and layout styles are removed */}
+          </section>
 
-      {/* Our Story Section */}
-      <section
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "4rem",
-          backgroundColor: "#e9ecef",
-          minHeight: "100vh",
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <img
-            src="/story.jpg"
-            alt="Our Story"
-            style={{ width: "100%", borderRadius: "8px" }}
-          />
-        </div>
-        <div style={{ flex: 1, paddingLeft: "2rem" }}>
-          <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Our Story</h2>
-          <p style={{ fontSize: "1.1rem", lineHeight: "1.6" }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-          </p>
-        </div>
-      </section>
+          {/* Our Mission Section */}
+          <section style={{ marginTop: '2rem' }}>
+            <h2>Our Mission</h2>
+            <p style={{ textAlign: 'left' }}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+            <div>
+              {/* Image is retained, but will be constrained by the card width */}
+              <img
+                src="/mission.jpg"
+                alt="Our Mission"
+                style={{ width: "100%", borderRadius: "8px", marginTop: '1rem' }}
+              />
+            </div>
+          </section>
 
-      {/* Backend Message Button */}
-      <div style={{ textAlign: "center", padding: "2rem" }}>
-        <button
-          onClick={fetchMessage}
-          style={{
-            padding: "0.75rem 1.5rem",
-            fontSize: "1rem",
-            backgroundColor: "#61dafb",
-            color: "#282c34",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          Get Message from Backend
-        </button>
-        {message && (
-          <p style={{ marginTop: "1rem", fontStyle: "italic" }}>{message}</p>
-        )}
+          {/* Our Story Section */}
+          <section style={{ marginTop: '2rem' }}>
+            <h2>Our Story</h2>
+            <div>
+              <img
+                src="/story.jpg"
+                alt="Our Story"
+                style={{ width: "100%", borderRadius: "8px", marginBottom: '1rem' }}
+              />
+            </div>
+            <p style={{ textAlign: 'left' }}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+          </section>
+
+          {/* Backend Message Button */}
+          <div style={{ marginTop: '2rem' }}>
+            {/* 4. The .submit-button class is applied here */}
+            <button
+              onClick={fetchMessage}
+              className="submit-button"
+            >
+              Get Message from Backend
+            </button>
+            {message && (
+              <p style={{ marginTop: "1rem", fontStyle: "italic" }}>{message}</p>
+            )}
+          </div>
+
+        </div>
       </div>
     </div>
   );
