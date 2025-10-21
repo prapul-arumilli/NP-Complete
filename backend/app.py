@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from es_manager import ElasticManager
+from search_builder import build_es_query_from_survey
 
 app = Flask(__name__)
 CORS(app)  # This allows cross-origin requests
@@ -73,6 +74,26 @@ def search_organizations():
     query = request.json.get("query", {"match_all": {}})
     results = es_manager.search(query, INDEX_NAME)
     return jsonify(results)
+
+
+@app.route("/survey", methods=["POST"]) 
+def survey_to_search():
+    """Accept survey answers and return ES results based on derived query."""
+    payload = request.get_json(silent=True) or {}
+    # Accept either raw array or wrapped in a field
+    if isinstance(payload, list):
+        answers = payload
+    else:
+        answers = (
+            payload.get("answers")
+            or payload.get("result")
+            or payload.get("responses")
+            or []
+        )
+
+    es_query = build_es_query_from_survey(answers if isinstance(answers, list) else [])
+    results = es_manager.search(es_query, INDEX_NAME)
+    return jsonify({"query": es_query, "results": results})
 
 
 @app.route("/", methods=["GET"])
