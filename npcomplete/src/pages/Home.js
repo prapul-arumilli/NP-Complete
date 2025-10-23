@@ -47,7 +47,7 @@ function Home() {
             <div>
               {/* Image is retained, but will be constrained by the card width */}
               <img
-                src="/mission.jpg"
+                src="/mission.png"
                 alt="Our Mission"
                 style={{ width: "100%", borderRadius: "8px", marginTop: '1rem' }}
               />
