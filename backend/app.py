@@ -76,22 +76,11 @@ def search_organizations():
     return jsonify(results)
 
 
-@app.route("/survey", methods=["POST"]) 
+@app.route("/api/survey", methods=["POST"]) 
 def survey_to_search():
     """Accept survey answers and return ES results based on derived query."""
-    payload = request.get_json(silent=True) or {}
-    # Accept either raw array or wrapped in a field
-    if isinstance(payload, list):
-        answers = payload
-    else:
-        answers = (
-            payload.get("answers")
-            or payload.get("result")
-            or payload.get("responses")
-            or []
-        )
-
-    es_query = build_es_query_from_survey(answers if isinstance(answers, list) else [])
+    answers = request.get_json(silent=True) or []
+    es_query = build_es_query_from_survey(answers)
     results = es_manager.search(es_query, INDEX_NAME)
     return jsonify({"query": es_query, "results": results})
 
