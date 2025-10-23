@@ -68,11 +68,11 @@ function CompletionScreen({ questions, answers, onRestart }) {
         }}>
           {apiResponse.results.map((hit, idx) => {
             const org = hit._source || {};
-            const name = org.NAME || 'Unnamed Organization';
-            const city = org.CITY;
-            const state = org.STATE;
-            const ntee = org.NTEE_CD;
-            const ein = org.EIN;
+            const name = org.name || 'Unnamed Organization';
+            const city = org.city;
+            const state = org.state;
+            const ntee = org.ntee;
+            const ein = org.ein;
             
             let line = name;
             if (city || state) {
