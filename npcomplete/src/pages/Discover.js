@@ -2,44 +2,96 @@ import React, { useState, useEffect } from 'react';
 import './Auth.css'; // Changed from Discover.css
 import './Discover.anim.css';
 
-// Sends survey result to backend
+// Sends survey result to backend and returns the response
 const sendSurveyToBackend = async (result) => {
   try {
-    await fetch('http://localhost:5000/api/survey', {
+    const response = await fetch('http://localhost:5000/api/survey', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(result),
     });
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error sending survey:', error);
+    return null;
   }
 };
 
 function CompletionScreen({ questions, answers, onRestart }) {
+  const [apiResponse, setApiResponse] = useState(null);
+  const [loading, setLoading] = useState(true);
   const result = questions.map((q, i) => ({ question: q.question, answer: answers[i] }));
   const jsonResult = JSON.stringify(result, null, 2);
 
   useEffect(() => {
-    sendSurveyToBackend(result);
+    const fetchResults = async () => {
+      const response = await sendSurveyToBackend(result);
+      setApiResponse(response);
+      setLoading(false);
+    };
+    fetchResults();
   }, []); // Only run once when mounted
 
   return (
     <>
       <h1>Survey Complete!</h1>
       <p>Thank you for completing the survey. We'll help match you with the perfect nonprofit opportunities!</p>
-      <h3>Your Answers (JSON):</h3>
+      
+      <h3>Your Answers:</h3>
       <pre style={{
         textAlign: 'left',
         background: '#f3f3f3',
         padding: '1rem',
         borderRadius: '8px',
-        fontSize: '0.95rem',
+        fontSize: '0.85rem',
         overflowX: 'auto',
         marginBottom: '1.5rem'
       }}>{jsonResult}</pre>
-      <button className="submit-button" onClick={onRestart}> {/* Changed from start-button */}
+
+      <h3>Your Results:</h3>
+      {loading ? (
+        <p>Loading results...</p>
+      ) : apiResponse && apiResponse.results && apiResponse.results.length > 0 ? (
+        <pre style={{
+          textAlign: 'left',
+          background: '#f3f3f3',
+          padding: '1rem',
+          borderRadius: '8px',
+          fontSize: '0.85rem',
+          overflowX: 'auto',
+          marginBottom: '1.5rem',
+          maxHeight: '400px',
+          overflowY: 'auto'
+        }}>
+          {apiResponse.results.map((hit, idx) => {
+            const org = hit._source || {};
+            const name = org.NAME || 'Unnamed Organization';
+            const city = org.CITY;
+            const state = org.STATE;
+            const ntee = org.NTEE_CD;
+            const ein = org.EIN;
+            
+            let line = name;
+            if (city || state) {
+              line += ` (${city || ''}${city && state ? ', ' : ''}${state || ''})`;
+            }
+            if (ntee) {
+              line += ` — NTEE ${ntee}`;
+            }
+            if (ein) {
+              line += ` — EIN ${ein}`;
+            }
+            return line + '\n';
+          }).join('')}
+        </pre>
+      ) : (
+        <p style={{ color: '#666' }}>No matching nonprofits found. Try adjusting your answers!</p>
+      )}
+
+      <button className="submit-button" onClick={onRestart}>
         Start Over
       </button>
     </>
