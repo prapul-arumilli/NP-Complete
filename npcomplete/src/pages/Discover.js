@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Discover.css';
+import './Auth.css'; // Changed from Discover.css
 import './Discover.anim.css';
 
 // Sends survey result to backend
@@ -39,7 +39,7 @@ function CompletionScreen({ questions, answers, onRestart }) {
         overflowX: 'auto',
         marginBottom: '1.5rem'
       }}>{jsonResult}</pre>
-      <button className="start-button" onClick={onRestart}>
+      <button className="submit-button" onClick={onRestart}> {/* Changed from start-button */}
         Start Over
       </button>
     </>
@@ -224,7 +224,7 @@ function Discover() {
     <>
       <h1>Discover</h1>
       <p>Complete a short survey and we can help match you with a nonprofit!</p>
-      <button className="start-button" onClick={handleStart}>Start!</button>
+      <button className="submit-button" onClick={handleStart}>Start!</button> {/* Changed from start-button */}
     </>
   );
 
@@ -271,8 +271,8 @@ function Discover() {
 
 
   return (
-    <div className="discover-page">
-      <div className="discover-container anim-rel-parent">
+    <div className="auth-page"> {/* Changed from discover-page */}
+      <div className="auth-container anim-rel-parent"> {/* Changed from discover-container */}
         {/* Animation image floats under the card, does not affect layout */}
         {showClassroomAnim && (
           <div
@@ -316,7 +316,7 @@ function Discover() {
             />
           </div>
         )}
-        <div className="discover-card" ref={cardRef}>
+        <div className="auth-card" ref={cardRef}> {/* Changed from discover-card */}
           {currentQuestion === -1 && renderWelcomeScreen()}
           {currentQuestion >= 0 && currentQuestion < questions.length && renderQuestion()}
           {currentQuestion === -2 && (

@@ -1,5 +1,6 @@
 import React from 'react';
-import './Explore.css'; // Import the CSS file
+// 1. Import Auth.css instead of Explore.css
+import './Auth.css'; 
 
 // URLs for images related to non-profits
 const nonprofitImages = {
@@ -22,40 +23,37 @@ const imageStyle = (imageUrl) => ({
 
 function Explore() {
   return (
-    <div className="explore-page">
-      {/* Search Bar */}
-      <div className="search-bar-container">
-        <input type="text" placeholder="Search" className="search-bar" />
-      </div>
+    // 2. Use .auth-page as the main container, allowing scroll
+    <div className="auth-page">
+      
+      {/* 3. Use a new wrapper class for centering the content */}
+      <div className="explore-content-container">
 
-      {/* Content Grid */}
-      <div className="content-grid">
-        {/* Row 1 */}
-        <div className="content-box pink" style={imageStyle(nonprofitImages.volunteersPacking)}>
-          <div className="wavy-line"></div>
-        </div>
-        <div className="content-box red" style={imageStyle(nonprofitImages.charityRun)}>
-          <div className="wavy-line"></div>
-        </div>
-        <div className="content-box large-green" style={imageStyle(nonprofitImages.beachCleanup)}>
-          <div className="wavy-line"></div>
+        {/* 4. Re-style search bar using .form-row */}
+        <div className="form-row" style={{ width: '70%', margin: '2rem auto 2.5rem auto' }}>
+          {/* 5. Add .search-input class for the icon */}
+          <input type="text" placeholder="Search" className="search-input" />
         </div>
 
-        {/* Row 2 */}
-        <div className="content-box light-green" style={imageStyle(nonprofitImages.communityGarden)}>
-          <div className="wavy-line"></div>
-        </div>
-        <div className="content-box purple" style={imageStyle(nonprofitImages.foodDonation)}>
-          <div className="wavy-line"></div>
-        </div>
-        {/* The large green box spans 2 rows */}
+        {/* 6. Use new .explore-grid class */}
+        <div className="explore-grid">
+          {/* 7. Use new .explore-box class (and removed wavy lines) */}
+          <div className="explore-box pink" style={imageStyle(nonprofitImages.volunteersPacking)}>
+          </div>
+          <div className="explore-box red" style={imageStyle(nonprofitImages.charityRun)}>
+          </div>
+          <div className="explore-box large-green" style={imageStyle(nonprofitImages.beachCleanup)}>
+          </div>
 
-        {/* Row 3 */}
-        <div className="content-box light-gray" style={imageStyle(nonprofitImages.animalShelter)}>
-          <div className="wavy-line"></div>
-        </div>
-        <div className="content-box light-blue" style={imageStyle(nonprofitImages.donationJar)}>
-          <div className="wavy-line"></div>
+          <div className="explore-box light-green" style={imageStyle(nonprofitImages.communityGarden)}>
+          </div>
+          <div className="explore-box purple" style={imageStyle(nonprofitImages.foodDonation)}>
+          </div>
+
+          <div className="explore-box light-gray" style={imageStyle(nonprofitImages.animalShelter)}>
+          </div>
+          <div className="explore-box light-blue" style={imageStyle(nonprofitImages.donationJar)}>
+          </div>
         </div>
       </div>
     </div>
