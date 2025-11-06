@@ -1,4 +1,3 @@
-/* ...existing code... */
 .auth-page {
   /* position: fixed; */ /* Removed to allow scrolling */
   top: 0;
@@ -172,15 +171,12 @@
   .auth-card p { font-size: 1rem; }
 }
 
-/* ========================================= */
-/* === NEW STYLES MOVED FROM EXPLORE.CSS === */
-/* ========================================= */
+/* Explore.js */
 
 .explore-content-container {
   width: 90%;
   max-width: 1200px; /* From old .content-grid */
-  /* margin: 0 auto; <-- THIS WAS THE PROBLEM. REMOVED. */
-  padding: 0 1rem; /* Removed old top/bottom padding */
+  padding: 0 1rem;
   margin-top: 5rem; /* Added space above */
   margin-bottom: 5rem; /* Added space below */
   z-index: 2;
@@ -327,4 +323,64 @@
 
 .next-button:hover {
   background-color: #1565c0;
+}
+
+/* Home Page */
+
+/* 1. New class to widen the auth-card on the Home page */
+.auth-card.auth-card--wide {
+  max-width: 1200px; /* Widen the card from 500px */
+  text-align: left; /* Change default alignment for content sections */
+}
+
+/* 2. "About Us" section styles from sketch */
+.home-section--about {
+  background-color: #f0f0f0; /* Gray background from sketch */
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  /* These negative margins make the background stretch to the
+    edges of the parent card's padding.
+  */
+  margin: -3rem -3rem 2.5rem -3rem;
+}
+
+/* Ensure h1 in .auth-card--wide (like About Us) is centered */
+.auth-card.auth-card--wide .home-section--about h1 {
+  text-align: center;
+  margin-top: 0; /* Override auth-card h1 margin */
+}
+
+/* 3. "Mission" and "Story" 2-column layout */
+.home-section--layout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2.5rem; /* Space between text and image */
+}
+
+.home-section--layout .home-section__text {
+  flex: 1; /* Takes 50% of the space */
+  min-width: 0; /* Prevents text overflow issues */
+}
+
+.home-section--layout .home-section__image {
+  flex: 1; /* Takes 50% of the space */
+}
+
+.home-section--layout .home-section__image img {
+  display: block; /* Fixes potential bottom spacing */
+}
+
+/* 4. Responsive adjustments for new home styles */
+@media (max-width: 768px) {
+  .home-section--about {
+    padding: 2rem 1rem;
+    /* Adjust margins to match the .auth-card's mobile padding */
+    margin: -2rem -2rem 2rem -2rem;
+  }
+  
+  .home-section--layout {
+    flex-direction: column; /* Stack columns on mobile */
+  }
 }
