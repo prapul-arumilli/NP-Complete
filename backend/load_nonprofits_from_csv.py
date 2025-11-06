@@ -20,6 +20,8 @@ def create_index_if_needed(es: ElasticManager) -> None:
             "ntee": {"type": "keyword"},
             "subsection": {"type": "keyword"},
             "deductibility": {"type": "keyword"},
+            "asset_amt": {"type": "long"},  # For filtering by organization size
+            "ruling": {"type": "integer"},  # Ruling date (YYYYMM) for filtering by age
         }
     }
     es.create_index(INDEX_NAME, mappings)
@@ -33,19 +35,38 @@ def row_to_doc(row: dict) -> tuple[dict, Optional[str]]:
     ntee = (row.get("NTEE_CD") or "").strip().upper()
     subsection = (row.get("SUBSECTION") or "").strip()
     deductibility = (row.get("DEDUCTIBILITY") or "").strip()
-    return (
-        {
-            "ein": ein,
-            "name": name,
-            "city": city,
-            "state": state,
-            "ntee": ntee,
-            "subsection": subsection,
-            "deductibility": deductibility,
-            "raw": row,
-        },
-        ein if ein else None,
-    )
+    
+    # Parse asset amount (from ASSET_AMT column)
+    asset_amt_str = (row.get("ASSET_AMT") or "").strip()
+    try:
+        asset_amt = int(asset_amt_str) if asset_amt_str else 0
+    except ValueError:
+        asset_amt = 0
+    
+    # Parse ruling date (from RULING column, format: YYYYMM)
+    ruling_str = (row.get("RULING") or "").strip()
+    try:
+        ruling = int(ruling_str) if ruling_str else None
+    except ValueError:
+        ruling = None
+    
+    doc = {
+        "ein": ein,
+        "name": name,
+        "city": city,
+        "state": state,
+        "ntee": ntee,
+        "subsection": subsection,
+        "deductibility": deductibility,
+        "asset_amt": asset_amt,
+        "raw": row,
+    }
+    
+    # Only add ruling if it has a valid value
+    if ruling is not None:
+        doc["ruling"] = ruling
+    
+    return (doc, ein if ein else None)
 
 
 def main(path: str, limit: int = 100, only_501c3: bool = True) -> None:
