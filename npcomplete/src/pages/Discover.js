@@ -120,32 +120,24 @@ function Discover() {
     },
     {
       id: 2,
-      question: "How would you prefer to contribute your time?",
-      options: [
-        "Direct hands-on work with people",
-        "Behind-the-scenes administrative tasks",
-        "Fundraising and event planning",
-        "Online/remote volunteer work"
-      ]
+      question: "Where are you located? (City)",
+      inputType: "text"
     },
     {
       id: 3,
-      question: "What group would you like to work with?",
+      question: "What organization size do you prefer to support?",
       options: [
-        "1",
-        "2",
-        "3",
-        "4"
+        "Small (Less than $100K)",
+        "Medium ($100K–$1M)",
+        "Large (More than $1M)"
       ]
     },
     {
       id: 4,
-      question: "How much time can you commit per week?",
+      question: "Would you prefer newer nonprofits (under 5 years old) or established ones (10+ years)?",
       options: [
-        "1-2 hours",
-        "3-5 hours",
-        "6-10 hours",
-        "More than 10 hours"
+        "Newer (under 5 years old)",
+        "Established (10+ years)"
       ]
     },
     {
@@ -157,7 +149,12 @@ function Discover() {
         "Community centers",
         "Virtual/Online work"
       ]
-    }
+    },
+    {
+      id: 6,
+      question: "What is your email?",
+      inputType: "email"
+    },
   ];
 
   const handleStart = () => {
@@ -283,7 +280,50 @@ function Discover() {
   const renderQuestion = () => {
     const question = questions[currentQuestion];
     const currentAnswer = answers[currentQuestion];
-    
+
+    // Free text input for question 2 and email input for question 6
+    if (question.inputType === "text" || question.inputType === "email") {
+      return (
+        <>
+          <button className="reset-button" onClick={handleReset} title="Reset Survey">
+          </button>
+          <h2>Question {currentQuestion + 1} of {questions.length}</h2>
+          <h3 className="question-text">{question.question}</h3>
+          <div className="options-container">
+            <input
+              type={question.inputType}
+              className="option-text-input"
+              value={currentAnswer || ''}
+              onChange={e => {
+                const newAnswers = [...answers];
+                newAnswers[currentQuestion] = e.target.value;
+                setAnswers(newAnswers);
+              }}
+              placeholder={question.inputType === 'email' ? 'Enter your email...' : 'Enter your location...'}
+              style={{ fontSize: '1.1rem', padding: '0.75rem', borderRadius: '6px', border: '1px solid #ccc', width: '100%' }}
+            />
+          </div>
+          <div className="navigation-buttons">
+            <button 
+              className="nav-button back-button" 
+              onClick={handleBack}
+              disabled={currentQuestion === 0}
+            >
+              ← Back
+            </button>
+            <button 
+              className="nav-button next-button" 
+              onClick={() => handleAnswer(currentAnswer || '')}
+              disabled={!currentAnswer || currentAnswer.trim() === ''}
+            >
+              {currentQuestion === questions.length - 1 ? 'Finish' : 'Next →'}
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    // Default: multiple choice
     return (
       <>
         <button className="reset-button" onClick={handleReset} title="Reset Survey">
