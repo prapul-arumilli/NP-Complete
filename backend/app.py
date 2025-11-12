@@ -3,10 +3,9 @@
 from os import getenv
 
 from dotenv import load_dotenv
+from es_manager import ElasticManager
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-from es_manager import ElasticManager
 from search_builder import build_es_query_from_survey
 
 app = Flask(__name__)
@@ -69,14 +68,14 @@ def bulk_add_organizations():
     return jsonify({"message": f"{len(documents)} organizations added."})
 
 
-@app.route("/organizations/search", methods=["POST"])
+@app.route("/api/search", methods=["POST"])
 def search_organizations():
     query = request.json.get("query", {"match_all": {}})
     results = es_manager.search(query, INDEX_NAME)
     return jsonify(results)
 
 
-@app.route("/api/survey", methods=["POST"]) 
+@app.route("/api/survey", methods=["POST"])
 def survey_to_search():
     """Accept survey answers and return ES results based on derived query."""
     answers = request.get_json(silent=True) or []

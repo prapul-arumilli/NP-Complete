@@ -40,7 +40,7 @@ if __name__ == "__main__":
     ESManager.create_index(index_name=index_name)
 
     # Load JSON docs
-    directory = "./data"  # change this path to your JSON directory
+    directory = "./data/json_output"  # change this path to your JSON directory
     documents = load_json_files(directory)
 
     # Append docs into index

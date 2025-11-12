@@ -31,25 +31,39 @@ function Explore() {
    * 3. This function is called when the user submits the search form.
    */
   const handleSearchSubmit = async (event) => {
-    event.preventDefault(); // Prevents the page from reloading
-    
-    // Don't search if the query is empty
+    event.preventDefault();
+
     if (searchQuery.trim() === '') {
-      setResults([]); // Clear any previous results
+      setResults([]);
       return;
     }
 
-    setIsLoading(true); // Show loading state
-    setError(null);     // Clear previous errors
+    setIsLoading(true);
+    setError(null);
 
     try {
-      // ---
-      // ⭐️ 1. This is the backend API endpoint.
-      // Replace '/api/search' with the actual route.
-      // ---
-      const endpoint = `/api/search?q=${encodeURIComponent(searchQuery)}`;
-      
-      const response = await fetch(endpoint);
+      // --- 1. Flask is running on port 5000 ---
+      // If your React dev server runs on port 3000, make sure to include the full URL
+      const endpoint = 'http://127.0.0.1:5000/api/search';
+
+      // --- 2. Build the POST body to match Flask's expected input ---
+      const body = {
+        query: {
+          query: {
+            query_string: {
+              query: searchQuery
+            }
+          }
+        }
+      };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status} - ${response.statusText}`);
@@ -57,18 +71,17 @@ function Explore() {
 
       const data = await response.json();
 
-      // ---
-      // ⭐️ 2. Depends on the backend's JSON response.
-      // If backend sends back an array: setResults(data)
-      // If it sends { results: [...] }:   setResults(data.results)
-      // ---
+      // --- 3. Adjust based on backend structure ---
+      // If your Flask returns a dict like { "hits": [...] }:
+      // setResults(data.hits)
+      // If it returns an array directly:
       setResults(data);
 
     } catch (err) {
-      console.error("Failed to fetch search results:", err);
-      setError("Failed to load results. Please try again.");
+      console.error('Failed to fetch search results:', err);
+      setError('Failed to load results. Please try again.');
     } finally {
-      setIsLoading(false); // Hide loading state
+      setIsLoading(false);
     }
   };
 
@@ -102,21 +115,64 @@ function Explore() {
 
         {/* --- RESULTS STATE (Show results if they exist) --- */}
         {!isLoading && !error && results.length > 0 && (
-          <div className="explore-grid"> {/* Use the same grid */}
-            {/* ⭐️ 3. Map over your 'results' array.
-              Change 'result.id', 'result.name', and 'result.imageUrl'
-              to match the field names from your backend database.
-            */}
-            {results.map(result => (
-              <div 
-                key={result.id} // ⭐️ Use a unique key, like 'result.id' or 'result.nonprofit_id'
-                className="explore-box"
-                style={imageStyle(result.imageUrl)} // ⭐️ Use the image field, e.g., 'result.image_url'
-              >
-              </div>
-            ))}
+          <div 
+            className="explore-grid"
+            style={{
+              marginTop: '4rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',   // center wide cards if maxWidth < 100%
+              gap: '1.5rem',
+              width: '100%',
+              padding: '0 1rem',      // small page padding
+            }}
+          >
+            {results.map((result) => {
+              const src = result._source || {};
+              return (
+                <div 
+                  key={result._id}
+                  className="explore-card"
+                  style={{
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '12px',
+                    padding: '1.25rem 2rem',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                    width: '100%',           // full width of container
+                    maxWidth: '1000px',      // optional: keeps cards readable on very wide screens
+                  }}
+                >
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#111827' }}>
+                    {src.NAME || 'Unnamed Nonprofit'}
+                  </h3>
+
+                  <p style={{ margin: '0.25rem 0', color: '#4b5563', fontSize: '0.9rem' }}>
+                    {src.CITY && src.STATE ? `${src.CITY}, ${src.STATE}` : 'Location Unknown'}
+                  </p>
+
+                  <p style={{ margin: '0.25rem 0', color: '#2563eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                    {src.NTEE_TITLE || 'No Category'}
+                  </p>
+
+                  <p
+                    style={{
+                      marginTop: '0.75rem',
+                      color: '#374151',
+                      fontSize: '0.95rem',
+                      lineHeight: '1.6',
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      wordWrap: 'break-word',
+                    }}
+                  >
+                    {src.NTEE_DESCRIPTION || 'No description available.'}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         )}
+
 
         {!isLoading && !error && results.length === 0 && (
           <div className="explore-grid">
