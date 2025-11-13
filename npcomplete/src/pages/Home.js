@@ -29,7 +29,9 @@ function Home() {
           <section className="home-section--about">
             <h1>About Us</h1>
             <p>
-              Big facts go here — About Us section
+              At NP Complete, we believe that giving back should be simple, personal, and impactful. Our platform helps individuals discover nonprofits that align with their values, interests, and level of involvement — whether that means donating, volunteering, or both.
+              <br></br><br></br>Using intelligent filters and curated recommendations, we connect you with organizations that make a real difference, locally or globally. No endless searching, no uncertainty — just meaningful opportunities to do good.
+
             </p>
           </section>
 
@@ -39,12 +41,12 @@ function Home() {
             <div className="home-section__text">
               <h2>Our Mission</h2>
               <p style={{ textAlign: 'left' }}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
+Our mission is to connect people with altruistic causes that inspire them to act.<br></br><br></br>
+We aim to remove the barriers between those who want to help and the nonprofits that need their help — creating a world where everyone can contribute to positive change in a way that fits their passion, location, and lifestyle.              </p>
             </div>
             <div className="home-section__image">
               <img
-                src="/mission.png"
+                src="/Mission.png"
                 alt="Our Mission"
                 style={{ width: "100%", borderRadius: "8px" }}
               />
@@ -57,7 +59,7 @@ function Home() {
           <section className="home-section--layout" style={{ marginTop: '2rem' }}>
             <div className="home-section__image">
               <img
-                src="/story.jpg"
+                src="/Story.jpg"
                 alt="Our Story"
                 style={{ width: "100%", borderRadius: "8px" }}
               />
@@ -65,8 +67,9 @@ function Home() {
             <div className="home-section__text">
               <h2>Our Story</h2>
               <p style={{ textAlign: 'left' }}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
+The idea for NP Complete grew out of a simple frustration: finding the right nonprofit to support shouldn’t feel so complicated. As students and technologists, we realized that a recommender system — the same kind used to match people with movies or jobs — could be used for something far more meaningful: matching people with causes.
+<br></br><br></br>
+So, we built a platform that brings data and compassion together. By combining smart technology with human purpose, NP Complete empowers every user to turn good intentions into real-world impact.              </p>
             </div>
           </section>
 

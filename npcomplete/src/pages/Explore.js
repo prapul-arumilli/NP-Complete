@@ -1,68 +1,46 @@
-import React, { useState } from 'react'; // 1. Import useState
-import './Auth.css'; 
-
-// URLs for images related to non-profits
-const nonprofitImages = {
-  volunteersPacking: 'https://images.pexels.com/photos/6646917/pexels-photo-6646917.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  charityRun: 'https://images.pexels.com/photos/1152994/pexels-photo-1152994.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  beachCleanup: 'https://www.marconews.com/gcdn/presto/2021/09/18/PTCN/299593ab-386d-41d4-bd8d-6f3018a0c512-TCN_COASTAL_CLEANUP07.jpg?width=660&height=440&fit=crop&format=pjpg&auto=webp',
-  communityGarden: 'https://images.squarespace-cdn.com/content/v1/594a7ef737c5813e5d8a8f8d/1526415778843-K4Q2JKKVRAVROKSG3O8P/Scotts_Miracle_Main.jpg?format=2500w',
-  foodDonation: 'https://images.pexels.com/photos/6994982/pexels-photo-6994982.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  animalShelter: 'https://images.pexels.com/photos/220327/pexels-photo-220327.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  donationJar: 'https://images.pexels.com/photos/6590699/pexels-photo-6590699.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-};
-
-// Style object for background images to keep the JSX clean
-const imageStyle = (imageUrl) => ({
-  backgroundImage: `url(${imageUrl})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-});
-
+import React, { useState, useEffect } from 'react';
+import './Auth.css';
 
 function Explore() {
-  // 2. Add state to hold the search query and the results
   const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState([]); // Holds search results from backend
-  const [isLoading, setIsLoading] = useState(false); // For loading spinner/message
-  const [error, setError] = useState(null);       // For error messages
+  const [results, setResults] = useState([]); 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);       
+  const [from, setFrom] = useState(0); 
+  const [hasMore, setHasMore] = useState(false);
 
-  /**
-   * 3. This function is called when the user submits the search form.
-   */
-  const handleSearchSubmit = async (event) => {
-    event.preventDefault();
+  const INITIAL_RESULTS = 20; // first batch
+  const LOAD_MORE_COUNT = 10; // per click
 
-    if (searchQuery.trim() === '') {
-      setResults([]);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
+  // Core fetch function
+  const fetchResults = async (reset = false) => {
     try {
-      // --- 1. Flask is running on port 5000 ---
-      // If your React dev server runs on port 3000, make sure to include the full URL
+      setIsLoading(true);
+      setError(null);
+
       const endpoint = 'http://127.0.0.1:5000/api/search';
 
-      // --- 2. Build the POST body to match Flask's expected input ---
+      // Decide offset and size
+      const currentFrom = reset ? 0 : from;
+      const size = reset ? INITIAL_RESULTS : LOAD_MORE_COUNT;
+
+      // ✅ FIXED: Always send same structure; "*" means match all
       const body = {
         query: {
           query: {
             query_string: {
-              query: searchQuery
+              query: searchQuery.trim() === '' ? '*' : searchQuery
             }
           }
-        }
+        },
+        from: currentFrom,
+        size: size
       };
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -70,13 +48,11 @@ function Explore() {
       }
 
       const data = await response.json();
+      const hits = Array.isArray(data) ? data : data.hits || [];
 
-      // --- 3. Adjust based on backend structure ---
-      // If your Flask returns a dict like { "hits": [...] }:
-      // setResults(data.hits)
-      // If it returns an array directly:
-      setResults(data);
-
+      setResults(reset ? hits : [...results, ...hits]);
+      setHasMore(hits.length > 0);
+      setFrom(currentFrom + hits.length);
     } catch (err) {
       console.error('Failed to fetch search results:', err);
       setError('Failed to load results. Please try again.');
@@ -85,17 +61,32 @@ function Explore() {
     }
   };
 
+  // Fetch default results on page load
+  useEffect(() => {
+    fetchResults(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSearchSubmit = async (event) => {
+    event.preventDefault();
+    setFrom(0);
+    fetchResults(true);
+  };
+
+  const handleLoadMore = () => {
+    fetchResults(false);
+  };
+
   return (
     <div className="auth-page">
       <div className="explore-content-container">
 
-        {/* 4. The search bar is now a <form> to handle 'Enter' key submission */}
+        {/* Search bar */}
         <form 
           className="form-row" 
           style={{ width: '70%', margin: '2rem auto 2.5rem auto' }}
           onSubmit={handleSearchSubmit} 
         >
-          {/* 5. The input is now "controlled" by React state */}
           <input 
             type="text" 
             placeholder="Search" 
@@ -105,94 +96,100 @@ function Explore() {
           />
         </form>
 
-        {/* 6. Conditionally render loading, error, results, or default grid */}
-        
-        {/* --- LOADING STATE --- */}
+        {/* Loading state */}
         {isLoading && <p style={{ textAlign: 'center' }}>Loading results...</p>}
 
-        {/* --- ERROR STATE --- */}
+        {/* Error state */}
         {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
 
-        {/* --- RESULTS STATE (Show results if they exist) --- */}
+        {/* Results */}
         {!isLoading && !error && results.length > 0 && (
-          <div 
-            className="explore-grid"
-            style={{
-              marginTop: '4rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',   // center wide cards if maxWidth < 100%
-              gap: '1.5rem',
-              width: '100%',
-              padding: '0 1rem',      // small page padding
-            }}
-          >
-            {results.map((result) => {
-              const src = result._source || {};
-              return (
-                <div 
-                  key={result._id}
-                  className="explore-card"
-                  style={{
-                    backgroundColor: '#f9fafb',
-                    borderRadius: '12px',
-                    padding: '1.25rem 2rem',
-                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-                    width: '100%',           // full width of container
-                    maxWidth: '1000px',      // optional: keeps cards readable on very wide screens
-                  }}
-                >
-                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#111827' }}>
-                    {src.NAME || 'Unnamed Nonprofit'}
-                  </h3>
-
-                  <p style={{ margin: '0.25rem 0', color: '#4b5563', fontSize: '0.9rem' }}>
-                    {src.CITY && src.STATE ? `${src.CITY}, ${src.STATE}` : 'Location Unknown'}
-                  </p>
-
-                  <p style={{ margin: '0.25rem 0', color: '#2563eb', fontSize: '0.9rem', fontWeight: 500 }}>
-                    {src.NTEE_TITLE || 'No Category'}
-                  </p>
-
-                  <p
+          <>
+            <div 
+              className="explore-grid"
+              style={{
+                marginTop: '4rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '1.5rem',
+                width: '100%',
+                padding: '0 1rem',
+              }}
+            >
+              {results.map((result) => {
+                const src = result._source || {};
+                return (
+                  <div 
+                    key={result._id}
+                    className="explore-card"
                     style={{
-                      marginTop: '0.75rem',
-                      color: '#374151',
-                      fontSize: '0.95rem',
-                      lineHeight: '1.6',
-                      whiteSpace: 'normal',
-                      overflow: 'visible',
-                      wordWrap: 'break-word',
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '12px',
+                      padding: '1.25rem 2rem',
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                      width: '100%',
+                      maxWidth: '1000px',
                     }}
                   >
-                    {src.NTEE_DESCRIPTION || 'No description available.'}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#111827' }}>
+                      {src.NAME || 'Unnamed Nonprofit'}
+                    </h3>
+
+                    <p style={{ margin: '0.25rem 0', color: '#4b5563', fontSize: '0.9rem' }}>
+                      {src.CITY && src.STATE ? `${src.CITY}, ${src.STATE}` : 'Location Unknown'}
+                    </p>
+
+                    <p style={{ margin: '0.25rem 0', color: '#2563eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                      {src.NTEE_TITLE || 'No Category'}
+                    </p>
+
+                    <p
+                      style={{
+                        marginTop: '0.75rem',
+                        color: '#374151',
+                        fontSize: '0.95rem',
+                        lineHeight: '1.6',
+                        whiteSpace: 'normal',
+                        overflow: 'visible',
+                        wordWrap: 'break-word',
+                      }}
+                    >
+                      {src.NTEE_DESCRIPTION || 'No description available.'}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {hasMore && !isLoading && (
+              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                <button 
+                  onClick={handleLoadMore}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Show more
+                </button>
+              </div>
+            )}
+          </>
         )}
 
-
+        {/* No results */}
         {!isLoading && !error && results.length === 0 && (
-          <div className="explore-grid">
-            <div className="explore-box pink" style={imageStyle(nonprofitImages.volunteersPacking)}>
-            </div>
-            <div className="explore-box red" style={imageStyle(nonprofitImages.charityRun)}>
-            </div>
-            <div className="explore-box large-green" style={imageStyle(nonprofitImages.beachCleanup)}>
-            </div>
-            <div className="explore-box light-green" style={imageStyle(nonprofitImages.communityGarden)}>
-            </div>
-            <div className="explore-box purple" style={imageStyle(nonprofitImages.foodDonation)}>
-            </div>
-            <div className="explore-box light-gray" style={imageStyle(nonprofitImages.animalShelter)}>
-            </div>
-            <div className="explore-box light-blue" style={imageStyle(nonprofitImages.donationJar)}>
-            </div>
-          </div>
+          <p style={{ textAlign: 'center', marginTop: '3rem', color: '#6b7280' }}>
+            No results found.
+          </p>
         )}
-
       </div>
     </div>
   );
