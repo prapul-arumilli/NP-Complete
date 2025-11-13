@@ -3,10 +3,10 @@
 from os import getenv
 
 from dotenv import load_dotenv
+from es_manager import ElasticManager
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-from es_manager import ElasticManager
+from search_builder import build_es_query_from_survey
 
 app = Flask(__name__)
 CORS(app)  # This allows cross-origin requests
@@ -68,11 +68,30 @@ def bulk_add_organizations():
     return jsonify({"message": f"{len(documents)} organizations added."})
 
 
-@app.route("/organizations/search", methods=["POST"])
+@app.route("/api/search", methods=["POST"])
+@app.route("/api/search", methods=["POST"])
 def search_organizations():
-    query = request.json.get("query", {"match_all": {}})
+    # Accepts a body with { query: { ... }, from, size }
+    body = request.get_json(silent=True) or {}
+    query = body.get("query", {"match_all": {}})
+    from_ = body.get("from", 0)
+    size = body.get("size", 10)
+    # Inject pagination into query dict
+    if isinstance(query, dict):
+        query = dict(query)  # shallow copy
+        query["from"] = from_
+        query["size"] = size
     results = es_manager.search(query, INDEX_NAME)
     return jsonify(results)
+
+
+@app.route("/api/survey", methods=["POST"])
+def survey_to_search():
+    """Accept survey answers and return ES results based on derived query."""
+    answers = request.get_json(silent=True) or []
+    es_query = build_es_query_from_survey(answers)
+    results = es_manager.search(es_query, INDEX_NAME)
+    return jsonify({"query": es_query, "results": results})
 
 
 @app.route("/", methods=["GET"])

@@ -2,47 +2,134 @@ import React, { useState, useEffect } from 'react';
 import './Auth.css'; // Changed from Discover.css
 import './Discover.anim.css';
 
-// Sends survey result to backend
-const sendSurveyToBackend = async (result) => {
-  try {
-    await fetch('http://localhost:5000/api/survey', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(result),
-    });
-  } catch (error) {
-    console.error('Error sending survey:', error);
-  }
-};
-
+// ...existing code...
 function CompletionScreen({ questions, answers, onRestart }) {
-  const result = questions.map((q, i) => ({ question: q.question, answer: answers[i] }));
-  const jsonResult = JSON.stringify(result, null, 2);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    sendSurveyToBackend(result);
-  }, []); // Only run once when mounted
+    const fetchResults = async () => {
+      setLoading(true);
+      setError(null);
+      // Find the CITY answer (question 2, index 1)
+      const userCity = answers[1] ? String(answers[1]).trim() : '';
+      if (!userCity) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+      const endpoint = 'http://127.0.0.1:5000/api/search';
+      const body = {
+        query: {
+          query: {
+            match: { CITY: userCity }
+          }
+        },
+        from: 0,
+        size: 5
+      };
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+        const data = await response.json();
+        const hits = Array.isArray(data) ? data : data.hits || [];
+        setResults(hits);
+      } catch (err) {
+        setError('Failed to load results. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResults();
+  }, [answers]);
 
   return (
-    <>
+    <div style={{
+      minHeight: '100vh',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      padding: '2rem 0',
+      background: '#fff',
+    }}>
       <h1>Survey Complete!</h1>
       <p>Thank you for completing the survey. We'll help match you with the perfect nonprofit opportunities!</p>
-      <h3>Your Answers (JSON):</h3>
-      <pre style={{
-        textAlign: 'left',
-        background: '#f3f3f3',
-        padding: '1rem',
-        borderRadius: '8px',
-        fontSize: '0.95rem',
-        overflowX: 'auto',
-        marginBottom: '1.5rem'
-      }}>{jsonResult}</pre>
-      <button className="submit-button" onClick={onRestart}> {/* Changed from start-button */}
+
+      <h3>Your Results:</h3>
+      {loading ? (
+        <p>Loading results...</p>
+      ) : error ? (
+        <p style={{ color: 'red' }}>{error}</p>
+      ) : results.length > 0 ? (
+        <div style={{
+          marginTop: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.5rem',
+          maxWidth: '96vw',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}>
+          {results.slice(0, 5).map((result, idx) => {
+            const src = result._source || {};
+            return (
+              <div
+                key={result._id || idx}
+                className="explore-card"
+                style={{
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '12px',
+                  padding: '1.25rem 2rem',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                  width: '100%',
+                  marginBottom: '1rem',
+                  overflow: 'hidden',
+                }}
+              >
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#111827' }}>
+                  {src.NAME || 'Unnamed Nonprofit'}
+                </h3>
+                <p style={{ margin: '0.25rem 0', color: '#4b5563', fontSize: '0.9rem' }}>
+                  {src.CITY && src.STATE ? `${src.CITY}, ${src.STATE}` : 'Location Unknown'}
+                </p>
+                <p style={{ margin: '0.25rem 0', color: '#2563eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                  {src.NTEE_TITLE || 'No Category'}
+                </p>
+                <p
+                  style={{
+                    marginTop: '0.75rem',
+                    color: '#374151',
+                    fontSize: '0.95rem',
+                    lineHeight: '1.6',
+                    whiteSpace: 'normal',
+                    overflow: 'visible',
+                    wordWrap: 'break-word',
+                  }}
+                >
+                  {src.NTEE_DESCRIPTION || 'No description available.'}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p style={{ color: '#666' }}>No matching nonprofits found. Try adjusting your answers!</p>
+      )}
+
+      <button className="submit-button" onClick={onRestart} style={{ marginTop: '2rem' }}>
         Start Over
       </button>
-    </>
+    </div>
   );
 }
 
@@ -63,37 +150,29 @@ function Discover() {
         "Education & Youth Development",
         "Environmental Conservation",
         "Health & Medical",
-        "Poverty & Homelessness"
+        "Legal Aid & Human Rights",
       ]
     },
     {
       id: 2,
-      question: "How would you prefer to contribute your time?",
-      options: [
-        "Direct hands-on work with people",
-        "Behind-the-scenes administrative tasks",
-        "Fundraising and event planning",
-        "Online/remote volunteer work"
-      ]
+      question: "Where are you located? (City)",
+      inputType: "text"
     },
     {
       id: 3,
-      question: "What group would you like to work with?",
+      question: "What organization size do you prefer to support?",
       options: [
-        "1",
-        "2",
-        "3",
-        "4"
+        "Small (Less than $100K)",
+        "Medium ($100K–$1M)",
+        "Large (More than $1M)"
       ]
     },
     {
       id: 4,
-      question: "How much time can you commit per week?",
+      question: "Would you prefer newer nonprofits (under 5 years old) or established ones (10+ years)?",
       options: [
-        "1-2 hours",
-        "3-5 hours",
-        "6-10 hours",
-        "More than 10 hours"
+        "Newer (under 5 years old)",
+        "Established (10+ years)"
       ]
     },
     {
@@ -105,7 +184,12 @@ function Discover() {
         "Community centers",
         "Virtual/Online work"
       ]
-    }
+    },
+    {
+      id: 6,
+      question: "What is your email?",
+      inputType: "email"
+    },
   ];
 
   const handleStart = () => {
@@ -231,7 +315,50 @@ function Discover() {
   const renderQuestion = () => {
     const question = questions[currentQuestion];
     const currentAnswer = answers[currentQuestion];
-    
+
+    // Free text input for question 2 and email input for question 6
+    if (question.inputType === "text" || question.inputType === "email") {
+      return (
+        <>
+          <button className="reset-button" onClick={handleReset} title="Reset Survey">
+          </button>
+          <h2>Question {currentQuestion + 1} of {questions.length}</h2>
+          <h3 className="question-text">{question.question}</h3>
+          <div className="options-container">
+            <input
+              type={question.inputType}
+              className="option-text-input"
+              value={currentAnswer || ''}
+              onChange={e => {
+                const newAnswers = [...answers];
+                newAnswers[currentQuestion] = e.target.value;
+                setAnswers(newAnswers);
+              }}
+              placeholder={question.inputType === 'email' ? 'Enter your email...' : 'Enter your location...'}
+              style={{ fontSize: '1.1rem', padding: '0.75rem', borderRadius: '6px', border: '1px solid #ccc', width: '100%' }}
+            />
+          </div>
+          <div className="navigation-buttons">
+            <button 
+              className="nav-button back-button" 
+              onClick={handleBack}
+              disabled={currentQuestion === 0}
+            >
+              ← Back
+            </button>
+            <button 
+              className="nav-button next-button" 
+              onClick={() => handleAnswer(currentAnswer || '')}
+              disabled={!currentAnswer || currentAnswer.trim() === ''}
+            >
+              {currentQuestion === questions.length - 1 ? 'Finish' : 'Next →'}
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    // Default: multiple choice
     return (
       <>
         <button className="reset-button" onClick={handleReset} title="Reset Survey">
