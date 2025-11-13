@@ -435,5 +435,6 @@ data/**
 
 # Keep these small, committed samples/docs
 !data/eo_oh_1k.csv
+!data/ntee_codes.json
 
 elastic-start-local/
