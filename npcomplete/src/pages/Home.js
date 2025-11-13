@@ -75,7 +75,7 @@ So, we built a platform that brings data and compassion together. By combining s
 
           {/* Backend Message Button */}
           {/* Added a separator line for visual clarity */}
-          <div style={{ marginTop: '3rem', borderTop: '1px solid #e0e0e0', paddingTop: '2rem', textAlign: 'center' }}>
+          {/* <div style={{ marginTop: '3rem', borderTop: '1px solid #e0e0e0', paddingTop: '2rem', textAlign: 'center' }}>
             <button
               onClick={fetchMessage}
               className="submit-button"
@@ -85,7 +85,7 @@ So, we built a platform that brings data and compassion together. By combining s
             {message && (
               <p style={{ marginTop: "1rem", fontStyle: "italic" }}>{message}</p>
             )}
-          </div>
+          </div> */}
 
         </div>
       </div>
