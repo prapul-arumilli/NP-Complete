@@ -69,8 +69,18 @@ def bulk_add_organizations():
 
 
 @app.route("/api/search", methods=["POST"])
+@app.route("/api/search", methods=["POST"])
 def search_organizations():
-    query = request.json.get("query", {"match_all": {}})
+    # Accepts a body with { query: { ... }, from, size }
+    body = request.get_json(silent=True) or {}
+    query = body.get("query", {"match_all": {}})
+    from_ = body.get("from", 0)
+    size = body.get("size", 10)
+    # Inject pagination into query dict
+    if isinstance(query, dict):
+        query = dict(query)  # shallow copy
+        query["from"] = from_
+        query["size"] = size
     results = es_manager.search(query, INDEX_NAME)
     return jsonify(results)
 

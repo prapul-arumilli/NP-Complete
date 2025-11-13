@@ -2,99 +2,134 @@ import React, { useState, useEffect } from 'react';
 import './Auth.css'; // Changed from Discover.css
 import './Discover.anim.css';
 
-// Sends survey result to backend and returns the response
-const sendSurveyToBackend = async (result) => {
-  try {
-    const response = await fetch('http://localhost:5000/api/survey', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(result),
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error sending survey:', error);
-    return null;
-  }
-};
-
+// ...existing code...
 function CompletionScreen({ questions, answers, onRestart }) {
-  const [apiResponse, setApiResponse] = useState(null);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const result = questions.map((q, i) => ({ question: q.question, answer: answers[i] }));
-  const jsonResult = JSON.stringify(result, null, 2);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchResults = async () => {
-      const response = await sendSurveyToBackend(result);
-      setApiResponse(response);
-      setLoading(false);
+      setLoading(true);
+      setError(null);
+      // Find the CITY answer (question 2, index 1)
+      const userCity = answers[1] ? String(answers[1]).trim() : '';
+      if (!userCity) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+      const endpoint = 'http://127.0.0.1:5000/api/search';
+      const body = {
+        query: {
+          query: {
+            match: { CITY: userCity }
+          }
+        },
+        from: 0,
+        size: 5
+      };
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+        const data = await response.json();
+        const hits = Array.isArray(data) ? data : data.hits || [];
+        setResults(hits);
+      } catch (err) {
+        setError('Failed to load results. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchResults();
-  }, []); // Only run once when mounted
+  }, [answers]);
 
   return (
-    <>
+    <div style={{
+      minHeight: '100vh',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      padding: '2rem 0',
+      background: '#fff',
+    }}>
       <h1>Survey Complete!</h1>
       <p>Thank you for completing the survey. We'll help match you with the perfect nonprofit opportunities!</p>
-      
-      <h3>Your Answers:</h3>
-      <pre style={{
-        textAlign: 'left',
-        background: '#f3f3f3',
-        padding: '1rem',
-        borderRadius: '8px',
-        fontSize: '0.85rem',
-        overflowX: 'auto',
-        marginBottom: '1.5rem'
-      }}>{jsonResult}</pre>
 
       <h3>Your Results:</h3>
       {loading ? (
         <p>Loading results...</p>
-      ) : apiResponse && apiResponse.results && apiResponse.results.length > 0 ? (
-        <pre style={{
-          textAlign: 'left',
-          background: '#f3f3f3',
-          padding: '1rem',
-          borderRadius: '8px',
-          fontSize: '0.85rem',
-          overflowX: 'auto',
-          marginBottom: '1.5rem',
-          maxHeight: '400px',
-          overflowY: 'auto'
+      ) : error ? (
+        <p style={{ color: 'red' }}>{error}</p>
+      ) : results.length > 0 ? (
+        <div style={{
+          marginTop: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.5rem',
+          maxWidth: '96vw',
+          width: '100%',
+          boxSizing: 'border-box',
         }}>
-          {apiResponse.results.map((hit, idx) => {
-            const org = hit._source || {};
-            const name = org.name || 'Unnamed Organization';
-            const city = org.city;
-            const state = org.state;
-            const ntee = org.ntee;
-            const ein = org.ein;
-            
-            let line = name;
-            if (city || state) {
-              line += ` (${city || ''}${city && state ? ', ' : ''}${state || ''})`;
-            }
-            if (ntee) {
-              line += ` — NTEE ${ntee}`;
-            }
-            if (ein) {
-              line += ` — EIN ${ein}`;
-            }
-            return line + '\n';
-          }).join('')}
-        </pre>
+          {results.slice(0, 5).map((result, idx) => {
+            const src = result._source || {};
+            return (
+              <div
+                key={result._id || idx}
+                className="explore-card"
+                style={{
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '12px',
+                  padding: '1.25rem 2rem',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                  width: '100%',
+                  marginBottom: '1rem',
+                  overflow: 'hidden',
+                }}
+              >
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#111827' }}>
+                  {src.NAME || 'Unnamed Nonprofit'}
+                </h3>
+                <p style={{ margin: '0.25rem 0', color: '#4b5563', fontSize: '0.9rem' }}>
+                  {src.CITY && src.STATE ? `${src.CITY}, ${src.STATE}` : 'Location Unknown'}
+                </p>
+                <p style={{ margin: '0.25rem 0', color: '#2563eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                  {src.NTEE_TITLE || 'No Category'}
+                </p>
+                <p
+                  style={{
+                    marginTop: '0.75rem',
+                    color: '#374151',
+                    fontSize: '0.95rem',
+                    lineHeight: '1.6',
+                    whiteSpace: 'normal',
+                    overflow: 'visible',
+                    wordWrap: 'break-word',
+                  }}
+                >
+                  {src.NTEE_DESCRIPTION || 'No description available.'}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       ) : (
         <p style={{ color: '#666' }}>No matching nonprofits found. Try adjusting your answers!</p>
       )}
 
-      <button className="submit-button" onClick={onRestart}>
+      <button className="submit-button" onClick={onRestart} style={{ marginTop: '2rem' }}>
         Start Over
       </button>
-    </>
+    </div>
   );
 }
 
@@ -115,7 +150,7 @@ function Discover() {
         "Education & Youth Development",
         "Environmental Conservation",
         "Health & Medical",
-        "Poverty & Homelessness"
+        "Legal Aid & Human Rights",
       ]
     },
     {
