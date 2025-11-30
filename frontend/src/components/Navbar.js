@@ -31,7 +31,7 @@ function Navbar() {
           ))}
         </ul>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to="/signup">
+          {/* <Link to="/signup">
             <button className="login-button" style={{ background: '#e0e0e0', color: '#282c34' }}>
               Sign Up
             </button>
@@ -40,7 +40,7 @@ function Navbar() {
             <button className="login-button">
               Login
             </button>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </nav>
