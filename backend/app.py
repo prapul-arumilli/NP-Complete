@@ -73,15 +73,17 @@ def bulk_add_organizations():
 def search_organizations():
     # Accepts a body with { query: { ... }, from, size }
     body = request.get_json(silent=True) or {}
-    query = body.get("query", {"match_all": {}})
+    query_wrapper = body.get("query", {})
     from_ = body.get("from", 0)
     size = body.get("size", 10)
-    # Inject pagination into query dict
-    if isinstance(query, dict):
-        query = dict(query)  # shallow copy
-        query["from"] = from_
-        query["size"] = size
-    results = es_manager.search(query, INDEX_NAME)
+
+    # Extract inner ES query correctly
+    es_query = query_wrapper.get("query", {"match_all": {}})
+
+    # Attach pagination at top-level
+    final_query = {"query": es_query, "from": from_, "size": size}
+
+    results = es_manager.search(final_query, INDEX_NAME)
     return jsonify(results)
 
 
