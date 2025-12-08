@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import './Auth.css'; // Changed from Discover.css
+import React, { useState, useEffect, useRef } from 'react';
+import './Auth.css';
 import './Discover.anim.css';
 
-// ...existing code...
 function CompletionScreen({ questions, answers, onRestart }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +11,6 @@ function CompletionScreen({ questions, answers, onRestart }) {
     const fetchResults = async () => {
       setLoading(true);
       setError(null);
-      // Find the CITY answer (question 2, index 1)
       const userCity = answers[1] ? String(answers[1]).trim() : '';
       if (!userCity) {
         setResults([]);
@@ -134,13 +132,15 @@ function CompletionScreen({ questions, answers, onRestart }) {
 }
 
 function Discover() {
-  const [currentQuestion, setCurrentQuestion] = useState(-1); // -1 for welcome screen
+  const [currentQuestion, setCurrentQuestion] = useState(-1); // -1 = welcome, -2 = completion
   const [answers, setAnswers] = useState([]);
   const [showClassroomAnim, setShowClassroomAnim] = useState(false);
   const [showClassroomAnimRight, setShowClassroomAnimRight] = useState(false);
   const [popupLeft, setPopupLeft] = useState(null);
   const [popupRight, setPopupRight] = useState(null);
-  const cardRef = React.useRef();
+  const [animationImages, setAnimationImages] = useState({ left: null, right: null });
+  const cardRef = useRef();
+  const hideTimeoutsRef = useRef([]);
 
   const questions = [
     {
@@ -150,7 +150,7 @@ function Discover() {
         "Education & Youth Development",
         "Environmental Conservation",
         "Health & Medical",
-        "Legal Aid & Human Rights",
+        "Legal Aid & Human Rights"
       ]
     },
     {
@@ -192,111 +192,125 @@ function Discover() {
     },
   ];
 
-  const handleStart = () => {
-    setCurrentQuestion(0);
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      hideTimeoutsRef.current.forEach(t => clearTimeout(t));
+      hideTimeoutsRef.current = [];
+    };
+  }, []);
+
+  // Image maps
+
+  // Q1
+  const getQ1Images = (answer0) => {
+    if (answer0 === 'Environmental Conservation') return { left: '/forest.png', right: '/forest.png' };
+    if (answer0 === 'Health & Medical') return { left: '/doctorM.png', right: '/doctorF.png' };
+    if (answer0 === 'Legal Aid & Human Rights') return { left: '/humanrights.jpg', right: '/humanrights.jpg' };
+    if (answer0 === 'Education & Youth Development') return { left: '/book.png', right: '/book.png' };
+    return { left: '/book.png', right: '/book.png' };
   };
+
+  // Q3
+  const getQ3Images = (sel) => {
+    if (sel === 'Small (Less than $100K)') return { left: '/small.png', right: '/small.png' };
+    if (sel === 'Medium ($100K–$1M)') return { left: '/medium.png', right: '/medium.png' };
+    if (sel === 'Large (More than $1M)') return { left: '/big.png', right: '/big.png' };
+    return { left: '/small.png', right: '/small.png' };
+  };
+
+  // Q4
+  const getQ4Images = (sel) => {
+    if (sel === 'Newer (under 5 years old)') return { left: '/new.png', right: '/new.png' };
+    if (sel === 'Established (10+ years)') return { left: '/established.png', right: '/established.png' };
+    return { left: '/new.png', right: '/new.png' };
+  };
+
+  // Q5
+  const getQ5Images = (sel) => {
+    if (sel === 'Office/Indoor setting') return { left: '/office.png', right: '/office.png' };
+    if (sel === 'Outdoor activities') return { left: '/outdoor.png', right: '/outdoor.png' };
+    if (sel === 'Community centers') return { left: '/communitycenter.png', right: '/communitycenter.png' };
+    if (sel === 'Virtual/Online work') return { left: '/online.png', right: '/online.png' };
+    return { left: '/office.png', right: '/office.png' };
+  };
+
+  // Central animation trigger
+  const triggerAnimation = (questionIndex, selectedOption) => {
+    if (!cardRef.current) return;
+
+    // choose images
+    let imgs = { left: null, right: null };
+    if (questionIndex === 0) {
+      const answer0 = selectedOption || answers[0];
+      imgs = getQ1Images(answer0);
+    } else if (questionIndex === 2) {
+      imgs = getQ3Images(selectedOption);
+    } else if (questionIndex === 3) {
+      imgs = getQ4Images(selectedOption);
+    } else if (questionIndex === 4) {
+      imgs = getQ5Images(selectedOption);
+    } else {
+      return; // no animation for other questions
+    }
+
+    // position calculation
+    const cardRect = cardRef.current.getBoundingClientRect();
+    const popupWidth = 650;
+    const leftSpace = cardRect.left;
+    const left = Math.max(0, leftSpace / 2 - popupWidth / 2);
+    const rightSpace = window.innerWidth - cardRect.right;
+    const right = Math.max(0, cardRect.right + rightSpace / 2 - popupWidth / 2);
+
+    setAnimationImages(imgs);
+    setPopupLeft(left);
+    setPopupRight(right);
+
+    // clear any existing timeouts
+    hideTimeoutsRef.current.forEach(t => clearTimeout(t));
+    hideTimeoutsRef.current = [];
+
+    setShowClassroomAnim(true);
+    setShowClassroomAnimRight(true);
+
+    const t1 = setTimeout(() => setShowClassroomAnim(false), 2200);
+    const t2 = setTimeout(() => setShowClassroomAnimRight(false), 2200);
+    hideTimeoutsRef.current.push(t1, t2);
+  };
+
+  // Handlers & navigation
+  const handleStart = () => setCurrentQuestion(0);
 
   const handleAnswer = (selectedOption) => {
     const newAnswers = [...answers];
-    newAnswers[currentQuestion] = selectedOption; // Store answer at current question index
+    newAnswers[currentQuestion] = selectedOption;
     setAnswers(newAnswers);
 
-    // Animation for Q1: Education & Youth Development
-    if (currentQuestion === 0 && selectedOption === 'Education & Youth Development') {
-      if (cardRef.current) {
-        const cardRect = cardRef.current.getBoundingClientRect();
-        const popupWidth = 650;
-        const leftSpace = cardRect.left;
-        const left = Math.max(0, leftSpace / 2 - popupWidth / 2);
-        setPopupLeft(left);
-        setShowClassroomAnim(true);
-        setTimeout(() => setShowClassroomAnim(false), 2200);
-        const rightSpace = window.innerWidth - cardRect.right;
-        const right = Math.max(0, cardRect.right + rightSpace / 2 - popupWidth / 2);
-        setPopupRight(right);
-        setShowClassroomAnimRight(true);
-        setTimeout(() => setShowClassroomAnimRight(false), 2200);
-      }
+    // trigger animations for Q1, Q3, Q4, Q5
+    if ([0, 2, 3, 4].includes(currentQuestion)) {
+      triggerAnimation(currentQuestion, selectedOption);
     }
-    // Animation for Q1: Environmental Conservation
-    if (currentQuestion === 0 && selectedOption === 'Environmental Conservation') {
-      if (cardRef.current) {
-        const cardRect = cardRef.current.getBoundingClientRect();
-        const popupWidth = 650;
-        const leftSpace = cardRect.left;
-        const left = Math.max(0, leftSpace / 2 - popupWidth / 2);
-        setPopupLeft(left);
-        setShowClassroomAnim(true);
-        setTimeout(() => setShowClassroomAnim(false), 2200);
-        const rightSpace = window.innerWidth - cardRect.right;
-        const right = Math.max(0, cardRect.right + rightSpace / 2 - popupWidth / 2);
-        setPopupRight(right);
-        setShowClassroomAnimRight(true);
-        setTimeout(() => setShowClassroomAnimRight(false), 2200);
-      }
-    }
-    // Animation for Q1: Health & Medical
-    if (currentQuestion === 0 && selectedOption === 'Health & Medical') {
-      if (cardRef.current) {
-        const cardRect = cardRef.current.getBoundingClientRect();
-        const popupWidth = 650;
-        const leftSpace = cardRect.left;
-        const left = Math.max(0, leftSpace / 2 - popupWidth / 2);
-        setPopupLeft(left);
-        setShowClassroomAnim(true);
-        setTimeout(() => setShowClassroomAnim(false), 2200);
-        const rightSpace = window.innerWidth - cardRect.right;
-        const right = Math.max(0, cardRect.right + rightSpace / 2 - popupWidth / 2);
-        setPopupRight(right);
-        setShowClassroomAnimRight(true);
-        setTimeout(() => setShowClassroomAnimRight(false), 2200);
-      }
-    }
-    // Animation for Q1: Poverty & Homelessness
-    if (currentQuestion === 0 && selectedOption === 'Poverty & Homelessness') {
-      if (cardRef.current) {
-        const cardRect = cardRef.current.getBoundingClientRect();
-        const popupWidth = 650;
-        const leftSpace = cardRect.left;
-        const left = Math.max(0, leftSpace / 2 - popupWidth / 2);
-        setPopupLeft(left);
-        setShowClassroomAnim(true);
-        setTimeout(() => setShowClassroomAnim(false), 2200);
-        const rightSpace = window.innerWidth - cardRect.right;
-        const right = Math.max(0, cardRect.right + rightSpace / 2 - popupWidth / 2);
-        setPopupRight(right);
-        setShowClassroomAnimRight(true);
-        setTimeout(() => setShowClassroomAnimRight(false), 2200);
-      }
-    }
-
-    // Log the current answer and all answers so far
-    console.log('Selected answer:', selectedOption);
-    console.log('All answers so far:', newAnswers);
 
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // All questions completed
+      setCurrentQuestion(-2);
+    }
+
+    console.log('Selected answer:', selectedOption);
+    console.log('All answers so far:', newAnswers);
+    if (currentQuestion === questions.length - 1) {
       console.log('Survey completed! Final answers:', newAnswers);
-      setCurrentQuestion(-2); // -2 for completion screen
     }
   };
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      // All questions completed
-      console.log('Survey completed! Final answers:', answers);
-      setCurrentQuestion(-2);
-    }
+    if (currentQuestion < questions.length - 1) setCurrentQuestion(currentQuestion + 1);
+    else setCurrentQuestion(-2);
   };
 
   const handleBack = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
+    if (currentQuestion > 0) setCurrentQuestion(currentQuestion - 1);
   };
 
   const handleReset = () => {
@@ -304,11 +318,12 @@ function Discover() {
     setAnswers([]);
   };
 
+  // Render helpers
   const renderWelcomeScreen = () => (
     <>
       <h1>Discover</h1>
       <p>Complete a short survey and we can help match you with a nonprofit!</p>
-      <button className="submit-button" onClick={handleStart}>Start!</button> {/* Changed from start-button */}
+      <button className="submit-button" onClick={handleStart}>Start!</button>
     </>
   );
 
@@ -316,12 +331,10 @@ function Discover() {
     const question = questions[currentQuestion];
     const currentAnswer = answers[currentQuestion];
 
-    // Free text input for question 2 and email input for question 6
     if (question.inputType === "text" || question.inputType === "email") {
       return (
         <>
-          <button className="reset-button" onClick={handleReset} title="Reset Survey">
-          </button>
+          <button className="reset-button" onClick={handleReset} title="Reset Survey"></button>
           <h2>Question {currentQuestion + 1} of {questions.length}</h2>
           <h3 className="question-text">{question.question}</h3>
           <div className="options-container">
@@ -339,15 +352,15 @@ function Discover() {
             />
           </div>
           <div className="navigation-buttons">
-            <button 
-              className="nav-button back-button" 
+            <button
+              className="nav-button back-button"
               onClick={handleBack}
               disabled={currentQuestion === 0}
             >
               ← Back
             </button>
-            <button 
-              className="nav-button next-button" 
+            <button
+              className="nav-button next-button"
               onClick={() => handleAnswer(currentAnswer || '')}
               disabled={!currentAnswer || currentAnswer.trim() === ''}
             >
@@ -358,11 +371,9 @@ function Discover() {
       );
     }
 
-    // Default: multiple choice
     return (
       <>
-        <button className="reset-button" onClick={handleReset} title="Reset Survey">
-        </button>
+        <button className="reset-button" onClick={handleReset} title="Reset Survey"></button>
         <h2>Question {currentQuestion + 1} of {questions.length}</h2>
         <h3 className="question-text">{question.question}</h3>
         <div className="options-container">
@@ -377,15 +388,15 @@ function Discover() {
           ))}
         </div>
         <div className="navigation-buttons">
-          <button 
-            className="nav-button back-button" 
+          <button
+            className="nav-button back-button"
             onClick={handleBack}
             disabled={currentQuestion === 0}
           >
             ← Back
           </button>
-          <button 
-            className="nav-button next-button" 
+          <button
+            className="nav-button next-button"
             onClick={handleNext}
           >
             {currentQuestion === questions.length - 1 ? 'Finish' : 'Skip →'}
@@ -395,55 +406,42 @@ function Discover() {
     );
   };
 
-
-
+  // JSX return
   return (
-    <div className="auth-page"> {/* Changed from discover-page */}
-      <div className="auth-container anim-rel-parent"> {/* Changed from discover-container */}
-        {/* Animation image floats under the card, does not affect layout */}
+    <div className="auth-page">
+      <div className="auth-container anim-rel-parent">
+
+        {/* LEFT ANIMATION */}
         {showClassroomAnim && (
           <div
             className="classroom-anim-under"
             style={popupLeft !== null ? { left: popupLeft + 'px', position: 'fixed', top: 0, height: '100vh' } : {}}
           >
             <img
-                src={
-                  answers[0] === 'Environmental Conservation'
-                    ? '/forest.png'
-                    : answers[0] === 'Health & Medical'
-                    ? '/doctorM.png'
-                    : answers[0] === 'Poverty & Homelessness'
-                    ? '/house.png'
-                    : '/book.png'
-                }
-              alt="Classroom Animation"
+              src={animationImages.left}
+              alt="Classroom Animation Left"
               className="classroom-anim-img"
-              style={{ width: '650px', maxWidth: '98vw' }}
+              style={{ width: '400px', height: '400px', objectFit: 'contain' }}
             />
           </div>
         )}
+
+        {/* RIGHT ANIMATION */}
         {showClassroomAnimRight && (
           <div
             className="classroom-anim-under"
-            style={popupRight !== null ? { left: popupRight + 'px', position: 'fixed', top: 0, height: '100vh' } : {}}
+            style={popupRight !== null ? { left: popupRight + 40 + 'px', position: 'fixed', top: 0, height: '100vh' } : {}}
           >
             <img
-                src={
-                  answers[0] === 'Environmental Conservation'
-                    ? '/forest.png'
-                    : answers[0] === 'Health & Medical'
-                    ? '/doctorF.png'
-                    : answers[0] === 'Poverty & Homelessness'
-                    ? '/house.png'
-                    : '/book.png'
-                }
-              alt="Classroom Animation"
+              src={animationImages.right}
+              alt="Classroom Animation Right"
               className="classroom-anim-img"
-              style={{ width: '650px', maxWidth: '98vw' }}
+              style={{ width: '400px', height: '400px', objectFit: 'contain' }}
             />
           </div>
         )}
-        <div className="auth-card" ref={cardRef}> {/* Changed from discover-card */}
+
+        <div className="auth-card" ref={cardRef}>
           {currentQuestion === -1 && renderWelcomeScreen()}
           {currentQuestion >= 0 && currentQuestion < questions.length && renderQuestion()}
           {currentQuestion === -2 && (
