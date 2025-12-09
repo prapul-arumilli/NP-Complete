@@ -191,6 +191,10 @@
   background-size: 20px 20px;
 }
 
+.form-row.horizontal-filters {
+  flex-direction: row !important; /* force horizontal */
+}
+
 .explore-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid */

@@ -8,6 +8,9 @@ function Explore() {
   const [error, setError] = useState(null);       
   const [from, setFrom] = useState(0); 
   const [hasMore, setHasMore] = useState(false);
+  const [city, setCity] = useState('');
+  const [stateFilter, setStateFilter] = useState('');
+  const [zip, setZip] = useState('');
 
   const INITIAL_RESULTS = 20; // first batch
   const LOAD_MORE_COUNT = 10; // per click
@@ -26,16 +29,33 @@ function Explore() {
 
       // ✅ FIXED: Always send same structure; "*" means match all
       const body = {
+      query: {
         query: {
-          query: {
-            query_string: {
-              query: searchQuery.trim() === '' ? '*' : searchQuery
-            }
+          bool: {
+            must: [
+              {
+                query_string: {
+                  query: searchQuery.trim() === '' ? '*' : searchQuery,
+                  fields: [
+                    "NAME",
+                    "NTEE_DESCRIPTION",
+                    "NTEE_KEYWORDS",
+                    "NTEE_TITLE"
+                  ]
+                }
+              }
+            ],
+            filter: [
+              ...(city ? [{ match: { CITY: city } }] : []),
+              ...(stateFilter ? [{ match: { STATE: stateFilter } }] : []),
+              ...(zip ? [{ match: { ZIP: zip } }] : [])
+            ]
           }
-        },
-        from: currentFrom,
-        size: size
-      };
+        }
+      },
+      from: currentFrom,
+      size: size
+    };
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -83,8 +103,14 @@ function Explore() {
 
         {/* Search bar */}
         <form 
-          className="form-row" 
-          style={{ width: '70%', margin: '2rem auto 2.5rem auto' }}
+          className="form-row horizontal-filters" 
+          style={{ 
+            width: '70%', 
+            margin: '2rem auto 2.5rem auto',
+            display: 'flex',      
+            gap: '0.5rem',        
+            alignItems: 'center', 
+          }}
           onSubmit={handleSearchSubmit} 
         >
           <input 
@@ -93,8 +119,62 @@ function Explore() {
             className="search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearchSubmit(e);
+              }
+            }}
+            style={{ flexGrow: 2, flexBasis: 0, minWidth: 0 }}
+          />
+          
+          <input 
+            type="text"
+            placeholder="City"
+            className="search-input"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearchSubmit(e);
+              }
+            }}
+            style={{ flexGrow: 1, flexBasis: 0, minWidth: 0 }}
+          />
+
+          <input 
+            type="text"
+            placeholder="State"
+            className="search-input"
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearchSubmit(e);
+              }
+            }}
+            style={{ flexGrow: 1, flexBasis: 0, minWidth: 0 }}
+          />
+
+          <input 
+            type="text"
+            placeholder="ZIP"
+            className="search-input"
+            value={zip}
+            onChange={(e) => setZip(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearchSubmit(e);
+              }
+            }}
+            style={{ flexGrow: 1, flexBasis: 0, minWidth: 0 }}
           />
         </form>
+
+
 
         {/* Loading state */}
         {isLoading && <p style={{ textAlign: 'center' }}>Loading results...</p>}
