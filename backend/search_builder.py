@@ -33,10 +33,9 @@ def build_es_query_from_survey(answers: List[Dict]) -> Dict:
     }
 
     # Q3: Map organization size to asset amount ranges
-    # Note: asset_amt field would need to be added to ES index
     org_size_to_asset_range: Dict[str, Dict] = {
         "Small (Less than $100K)": {"lt": 100000},
-        "Medium ($100K–$1M)": {"gte": 100000, "lt": 1000000},
+        "Medium ($100K-$1M)": {"gte": 100000, "lt": 1000000},
         "Large (More than $1M)": {"gte": 1000000},
     }
 
@@ -71,22 +70,20 @@ def build_es_query_from_survey(answers: List[Dict]) -> Dict:
             should_clauses.append({"match": {"city": {"query": location_clean, "boost": 2.0}}})
 
     # Q3: Add organization size filter based on assets
-    # NOTE: This requires asset_amt field in ES index (from ASSET_AMT column in CSV)
     if org_size_answer:
         asset_range = org_size_to_asset_range.get(org_size_answer)
         if asset_range:
             filters.append({"range": {"asset_amt": asset_range}})
     
     # Q4: Add organization age filter based on ruling date
-    # NOTE: This requires ruling field in ES index (from RULING column in CSV, format: YYYYMM)
     if org_age_answer:
         current_year = datetime.now().year
-        if "under 5" in org_age_answer.lower() or "newer" in org_age_answer.lower():
-            # Organizations established in the last 5 years
+        if "newer" in org_age_answer.lower():
+            # Organizations created in the last 5 years
             cutoff_year = current_year - 5
             filters.append({"range": {"ruling": {"gte": cutoff_year * 100}}})
-        elif "10+" in org_age_answer.lower() or "established" in org_age_answer.lower():
-            # Organizations established 10+ years ago
+        elif "established" in org_age_answer.lower():
+            # Organizations created 10+ years ago
             cutoff_year = current_year - 10
             filters.append({"range": {"ruling": {"lt": cutoff_year * 100}}})
     

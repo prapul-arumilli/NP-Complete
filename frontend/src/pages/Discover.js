@@ -23,7 +23,7 @@ function CompletionScreen({ questions, answers, onRestart }) {
       const body = {
         query: {
           query: {
-            match: { CITY: userCity }
+            match: { city: userCity }
           }
         },
         from: 0,
@@ -97,13 +97,13 @@ function CompletionScreen({ questions, answers, onRestart }) {
                 }}
               >
                 <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#111827' }}>
-                  {src.NAME || 'Unnamed Nonprofit'}
+                  {src.name || src.NAME || 'Unnamed Nonprofit'}
                 </h3>
                 <p style={{ margin: '0.25rem 0', color: '#4b5563', fontSize: '0.9rem' }}>
-                  {src.CITY && src.STATE ? `${src.CITY}, ${src.STATE}` : 'Location Unknown'}
+                  {(src.city || src.CITY) && (src.state || src.STATE) ? `${src.city || src.CITY}, ${src.state || src.STATE}` : 'Location Unknown'}
                 </p>
                 <p style={{ margin: '0.25rem 0', color: '#2563eb', fontSize: '0.9rem', fontWeight: 500 }}>
-                  {src.NTEE_TITLE || 'No Category'}
+                  {src.ntee || src.NTEE_TITLE || 'No Category'}
                 </p>
                 <p
                   style={{
@@ -116,7 +116,7 @@ function CompletionScreen({ questions, answers, onRestart }) {
                     wordWrap: 'break-word',
                   }}
                 >
-                  {src.NTEE_DESCRIPTION || 'No description available.'}
+                  {src.ntee_description || src.NTEE_DESCRIPTION || 'No description available.'}
                 </p>
               </div>
             );
