@@ -97,6 +97,55 @@ function Explore() {
     fetchResults(false);
   };
 
+  // Surprise Me - fetch a random nonprofit
+  const handleSurpriseMe = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Get a random offset (assuming ~1000 docs)
+      const randomOffset = Math.floor(Math.random() * 900);
+      
+      const body = {
+        query: { query: { match_all: {} } },
+        from: randomOffset,
+        size: 1
+      };
+
+      const response = await fetch('http://127.0.0.1:5000/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch');
+      
+      const data = await response.json();
+      const hits = Array.isArray(data) ? data : data.hits || [];
+      
+      if (hits.length > 0) {
+        setResults(hits);
+        setHasMore(false);
+        setFrom(1);
+      }
+    } catch (err) {
+      setError('Failed to get random nonprofit. Try again!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Generate external links
+  const getProPublicaLink = (ein) => {
+    const cleanEin = ein?.replace(/-/g, '') || '';
+    return `https://projects.propublica.org/nonprofits/organizations/${cleanEin}`;
+  };
+
+  const getGoogleSearchLink = (name, city, state) => {
+    const query = encodeURIComponent(`${name} ${city} ${state} nonprofit`);
+    return `https://www.google.com/search?q=${query}`;
+  };
+
   return (
     <div className="auth-page">
       <div className="explore-content-container">
@@ -172,6 +221,24 @@ function Explore() {
             }}
             style={{ flexGrow: 1, flexBasis: 0, minWidth: 0 }}
           />
+          
+          <button
+            type="button"
+            onClick={handleSurpriseMe}
+            style={{
+              backgroundColor: '#10b981',
+              color: 'white',
+              border: 'none',
+              padding: '0.6rem 1rem',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Surprise Me
+          </button>
         </form>
 
 
@@ -237,6 +304,36 @@ function Explore() {
                     >
                       {src.NTEE_DESCRIPTION || 'No description available.'}
                     </p>
+
+                    {/* External Links */}
+                    <div style={{ marginTop: '1rem', display: 'flex', gap: '1.5rem' }}>
+                      {src.EIN && (
+                        <a
+                          href={getProPublicaLink(src.EIN)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#6b7280',
+                            fontSize: '0.85rem',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          View on ProPublica
+                        </a>
+                      )}
+                      <a
+                        href={getGoogleSearchLink(src.NAME, src.CITY, src.STATE)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#6b7280',
+                          fontSize: '0.85rem',
+                          textDecoration: 'underline',
+                        }}
+                      >
+                        Search Google
+                      </a>
+                    </div>
                   </div>
                 );
               })}
